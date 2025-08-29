@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navigation from "../components/navigation";
 import Notes from "../components/Notes";
+import UserProfile from "../components/UserProfile";
 import {
   Modal,
   IconButton,
@@ -63,9 +64,17 @@ const Dashboard = () => {
         <div className="fixed top-0 right-0 left-64 bg-white z-10">
           {/* User Info Section */}
           <div className="p-6 shadow-lg rounded-2xl">
-            <h1 className="text-2xl font-semibold">Dashboard</h1>
-            <p className="mt-2 font-medium text-gray-600">Welcome, {name}!</p>
-            <p className="mt-2 text-gray-600">Your email: {email}</p>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <p className="mt-2 font-medium text-gray-600">Welcome, {name}!</p>
+              </div>
+              <UserProfile 
+                name={name} 
+                email={email}
+                profilePicture={localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).profilePicture : undefined}
+              />
+            </div>
           </div>
 
           {/* Create Note Section */}
