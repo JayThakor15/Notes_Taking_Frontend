@@ -7,4 +7,24 @@ const API = axios.create({
   withCredentials: true,
 });
 
+export const addNote = async (note: { title: string; content: string }) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await API.post("/notes", note, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error creating note:", error);
+    throw error;
+  }
+};
+
 export default API;
