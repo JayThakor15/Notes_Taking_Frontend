@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CloseIcon from "@mui/icons-material/Close";
@@ -8,6 +8,7 @@ import GeneratedContentModal from "./GeneratedContentModal";
 import { CircularProgress } from "@mui/material";
 import API, { generateContent } from "../utils/api";
 import "../styles/notes.css";
+import "../styles/notebook.css"; // reuse lined paper styles
 
 interface Note {
   _id: string;
@@ -31,6 +32,8 @@ const Notes = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGeneratedContent, setShowGeneratedContent] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
+  const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [viewingNote, setViewingNote] = useState<Note | null>(null); // view-only modal
 
   const fetchNotes = async () => {
     try {
@@ -157,6 +160,71 @@ const Notes = () => {
 
   return (
     <div>
+      {/* View Note Modal */}
+      {viewingNote && !isEditing && (
+        <div
+          className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 modal-overlay"
+          onClick={() => setViewingNote(null)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full h-[80vh] flex flex-col overflow-hidden modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center px-6 pt-6 pb-3 border-b border-gray-100">
+              <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
+                {viewingNote.title || "Untitled Note"}
+              </h2>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    // Switch to edit mode with this note
+                    setEditingNote({
+                      _id: viewingNote._id,
+                      title: viewingNote.title,
+                      content: viewingNote.content,
+                    });
+                    setViewingNote(null);
+                    setIsEditing(true);
+                  }}
+                  className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setViewingNote(null)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+              <div className="notebook-paper" style={{ paddingTop: "1rem" }}>
+                <div
+                  className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                  style={{ background: "transparent" }}
+                >
+                  {viewingNote.content || "No content"}
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-3 border-t text-xs text-gray-400 bg-white flex justify-between items-center">
+              <span>
+                {new Date(viewingNote.createdAt).toLocaleString("en-US", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </span>
+              <button
+                onClick={() => setViewingNote(null)}
+                className="px-3 py-1 text-gray-500 hover:text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Edit and Generate Content Modals */}
       {isEditing && editingNote && (
         <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 modal-overlay">
@@ -169,13 +237,14 @@ const Notes = () => {
           >
             {/* Edit Modal */}
             <div
-              className={`bg-white rounded-lg p-6 w-full ${
+              className={`bg-white rounded-lg p-0 w-full ${
                 showGeneratedContent
-                  ? "max-w-md h-full overflow-y-auto flex-shrink-0"
+                  ? "max-w-md h-full flex-shrink-0"
                   : "max-w-xl"
-              } modal-content shadow-xl`}
+              } modal-content shadow-xl flex flex-col`}
+              style={{ overflow: "hidden" }}
             >
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center px-6 pt-6 pb-3 border-b border-gray-100">
                 <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-700">
                   Edit Note
                 </h2>
@@ -186,62 +255,62 @@ const Notes = () => {
                   <CloseIcon />
                 </button>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
+              <div className="flex-1 overflow-y-auto px-6 pb-4 pt-4">
+                <div className="notebook-paper">
                   <input
                     type="text"
                     value={editingNote.title}
                     onChange={(e) =>
                       setEditingNote({ ...editingNote, title: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Title..."
+                    className="notebook-title w-full bg-transparent focus:outline-none"
+                    style={{ border: "none" }}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content
-                  </label>
                   <textarea
+                    ref={editTextareaRef}
                     value={editingNote.content}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const el = e.target;
+                      el.style.height = "auto";
+                      el.style.height = el.scrollHeight + "px";
                       setEditingNote({
                         ...editingNote,
                         content: e.target.value,
-                      })
-                    }
-                    rows={4}
-                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      });
+                    }}
+                    placeholder="Edit your note here..."
+                    className="w-full bg-transparent focus:outline-none"
+                    rows={8}
+                    style={{ overflow: "hidden", resize: "none" }}
                   />
                 </div>
-                <div className="flex items-center space-x-3 justify-end">
-                  <button
-                    onClick={handleGenerateContent}
-                    disabled={isGenerating}
-                    className="flex items-center px-4 py-2 text-purple-600 bg-purple-50 rounded-md hover:bg-purple-100 transition-colors duration-200 disabled:opacity-50"
-                  >
-                    {isGenerating ? (
-                      <CircularProgress size={20} className="mr-2" />
-                    ) : (
-                      <AutoFixHighIcon className="mr-2" />
-                    )}
-                    Generate
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleUpdate}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
-                  >
-                    Save
-                  </button>
-                </div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 flex items-center space-x-3 justify-end bg-white">
+                <button
+                  onClick={handleGenerateContent}
+                  disabled={isGenerating}
+                  className="flex items-center px-4 py-2 text-purple-600 bg-purple-50 rounded-md hover:bg-purple-100 transition-colors duration-200 disabled:opacity-50"
+                >
+                  {isGenerating ? (
+                    <CircularProgress size={20} className="mr-2" />
+                  ) : (
+                    <AutoFixHighIcon className="mr-2" />
+                  )}
+                  Generate
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
+                >
+                  Save
+                </button>
               </div>
             </div>
 
@@ -304,8 +373,9 @@ const Notes = () => {
           {notes.map((note, index) => (
             <div
               key={note._id}
-              className="note-card relative overflow-hidden bg-white rounded-lg p-4"
+              className="note-card relative overflow-hidden bg-white rounded-lg p-4 cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => setViewingNote(note)}
             >
               <div className="flex-1">
                 <h3 className="font-semibold text-lg text-gray-800 mb-2">
@@ -324,7 +394,10 @@ const Notes = () => {
               </div>
               <div className="flex justify-end space-x-2 mt-4 border-t pt-3">
                 <button
-                  onClick={() => handleEdit(note)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(note);
+                  }}
                   className="action-button flex items-center px-3 py-1.5 text-blue-600 bg-blue-50 rounded-md
                           hover:bg-blue-100 transition-all duration-200"
                 >
@@ -332,7 +405,10 @@ const Notes = () => {
                   <span>Edit</span>
                 </button>
                 <button
-                  onClick={() => handleDelete(note._id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(note._id);
+                  }}
                   className="action-button flex items-center px-3 py-1.5 text-red-600 bg-red-50 rounded-md
                           hover:bg-red-100 transition-all duration-200"
                 >

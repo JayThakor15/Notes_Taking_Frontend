@@ -172,43 +172,42 @@ const Dashboard = () => {
                   }}
                 />
 
-                <div className="space-y-4 p-6">
-                  <TextField
-                    fullWidth
-                    placeholder="Give your note a title..."
-                    variant="standard"
-                    value={newNote.title}
-                    onChange={(e) =>
-                      setNewNote({ ...newNote, title: e.target.value })
-                    }
-                    className="notebook-title"
-                    InputProps={{
-                      disableUnderline: true,
-                      style: { fontSize: "1.25rem", fontWeight: 500 },
-                    }}
-                  />
-
-                  <TextField
-                    fullWidth
-                    multiline
-                    minRows={12}
-                    placeholder="Start writing your thoughts here..."
-                    variant="standard"
-                    value={newNote.content}
-                    onChange={(e) => {
-                      const target = e.target as HTMLTextAreaElement;
-                      // Auto-resize logic
-                      target.style.height = "auto";
-                      target.style.height = target.scrollHeight + "px";
-                      setNewNote({ ...newNote, content: e.target.value });
-                    }}
-                    className="notebook-paper"
-                    inputRef={noteContentRef}
-                    InputProps={{
-                      disableUnderline: true,
-                      style: { overflow: "hidden" },
-                    }}
-                  />
+                <div className="p-6">
+                  <div className="notebook-paper">
+                    <TextField
+                      fullWidth
+                      placeholder="Give your note a title..."
+                      variant="standard"
+                      value={newNote.title}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, title: e.target.value })
+                      }
+                      className="notebook-title"
+                      InputProps={{
+                        disableUnderline: true,
+                        style: { fontSize: "1.25rem", fontWeight: 600, background: "transparent" },
+                      }}
+                    />
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={12}
+                      placeholder="Start writing your thoughts here..."
+                      variant="standard"
+                      value={newNote.content}
+                      onChange={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = "auto";
+                        target.style.height = target.scrollHeight + "px";
+                        setNewNote({ ...newNote, content: e.target.value });
+                      }}
+                      inputRef={noteContentRef}
+                      InputProps={{
+                        disableUnderline: true,
+                        style: { overflow: "hidden", background: "transparent" },
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
