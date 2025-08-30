@@ -23,6 +23,8 @@
   font-size: 1rem;
   color: #374151;
   transform: translateY(-0.1em);
+  overflow: hidden !important; /* hide inner scrollbar */
+  resize: none; /* prevent manual resize that could reintroduce scrollbars */
 }
 
 .notebook-paper:focus-within {

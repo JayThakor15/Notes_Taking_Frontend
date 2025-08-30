@@ -31,6 +31,30 @@ export const uploadProfilePicture = async (file: File) => {
   }
 };
 
+export const generateContent = async (content: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await API.post(
+      "/ai/generate-content",
+      { content },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data.generatedContent;
+  } catch (error) {
+    console.error("Error generating content:", error);
+    throw error;
+  }
+};
+
 export const addNote = async (note: { title: string; content: string }) => {
   try {
     const token = localStorage.getItem("token");

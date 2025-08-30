@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navigation from "../components/navigation";
 import Notes from "../components/Notes";
 import UserProfile from "../components/UserProfile";
@@ -15,7 +15,8 @@ import CreateIcon from "@mui/icons-material/Create";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import API, { addNote } from "../utils/api";
+import { addNote, generateContent } from "../utils/api";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import "../styles/notebook.css";
 
 interface NewNote {
@@ -29,13 +30,17 @@ const Dashboard = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [newNote, setNewNote] = useState<NewNote>({ title: "", content: "" });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showGeneratedContent, setShowGeneratedContent] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState("");
+  const noteContentRef = useRef<HTMLTextAreaElement | null>(null);
 
   const handleCloseModal = () => {
     setIsClosing(true);
     setTimeout(() => {
       setIsCreateModalOpen(false);
       setIsClosing(false);
-    }, 200); // Match this with the animation duration
+    }, 200);
   };
 
   useEffect(() => {
@@ -47,8 +52,6 @@ const Dashboard = () => {
       setname(user?.name);
       setEmail(user?.email);
     }
-
-    return () => {};
   }, []);
 
   return (
@@ -67,12 +70,18 @@ const Dashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-semibold">Dashboard</h1>
-                <p className="mt-2 font-medium text-gray-600">Welcome, {name}!</p>
+                <p className="mt-2 font-medium text-gray-600">
+                  Welcome, {name}!
+                </p>
               </div>
-              <UserProfile 
-                name={name} 
+              <UserProfile
+                name={name}
                 email={email}
-                profilePicture={localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!).profilePicture : undefined}
+                profilePicture={
+                  localStorage.getItem("user")
+                    ? JSON.parse(localStorage.getItem("user")!).profilePicture
+                    : undefined
+                }
               />
             </div>
           </div>
@@ -109,126 +118,232 @@ const Dashboard = () => {
         className="flex items-center justify-center modal-overlay"
       >
         <div
-          className={`bg-white p-6 rounded-lg w-11/12 max-w-2xl relative modal-content ${
+          className={`bg-white rounded-lg relative modal-content flex gap-4 p-4 transition-all duration-300 ${
             isClosing ? "closing" : ""
-          }`}
-          style={{ boxShadow: "0 0 15px rgba(0,0,0,0.1)" }}
+          } ${showGeneratedContent ? "w-11/12 max-w-7xl" : "w-[600px]"}`}
+          style={{
+            boxShadow: "0 0 15px rgba(0,0,0,0.1)",
+            maxHeight: "85vh",
+          }}
         >
-          <Tooltip title="Close" arrow placement="top">
-            <IconButton
-              aria-label="close"
-              onClick={handleCloseModal}
-              className="absolute top-2 right-2 z-10 hover:rotate-90 transition-transform duration-300"
-              sx={{
-                color: "rgba(0,0,0,0.6)",
-                "&:hover": {
-                  color: "rgba(0,0,0,0.8)",
-                  backgroundColor: "rgba(0,0,0,0.04)",
-                },
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Tooltip>
-
+          {/* Main Create Note Panel */}
           <div
-            className="relative"
-            style={{
-              background:
-                "linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)",
-              padding: "16px",
-              borderRadius: "12px",
-              boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)",
-            }}
+            className={`bg-white rounded-lg flex flex-col h-[80vh] transition-all duration-300 ${
+              showGeneratedContent ? "flex-1" : "w-full"
+            }`}
           >
-            <div
-              className="absolute top-0 left-0 right-0 h-[24px]"
-              style={{
-                background:
-                  "repeating-linear-gradient(90deg, #3b82f6, #3b82f6 2px, transparent 2px, transparent 15px)",
-                opacity: "0.15",
-                borderTopLeftRadius: "12px",
-                borderTopRightRadius: "12px",
-              }}
-            ></div>
-
-            <div className="flex items-center mb-4 mt-1">
-              <CreateIcon className="text-blue-500 mr-2" />
-              <h2 className="text-xl font-semibold text-gray-800">New Note</h2>
-            </div>
-
-            {/* Notebook-style input fields */}
-            <div className="space-y-4">
-              <TextField
-                fullWidth
-                placeholder="Give your note a title..."
-                variant="standard"
-                value={newNote.title}
-                onChange={(e) =>
-                  setNewNote({ ...newNote, title: e.target.value })
-                }
-                className="notebook-title"
-                InputProps={{
-                  disableUnderline: true,
-                  style: { fontSize: "1.25rem", fontWeight: 500 },
-                }}
-              />
-
-              <TextField
-                fullWidth
-                multiline
-                rows={6}
-                placeholder="Start writing your thoughts here..."
-                variant="standard"
-                value={newNote.content}
-                onChange={(e) =>
-                  setNewNote({ ...newNote, content: e.target.value })
-                }
-                className="notebook-paper"
-                InputProps={{ disableUnderline: true }}
-              />
-            </div>
-
-            <div className="mt-4 flex justify-end gap-3">
-              <Tooltip title="Cancel" arrow>
-                <Button
-                  variant="outlined"
+            <div className="p-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <CreateIcon className="text-blue-500 mr-2" />
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    New Note
+                  </h2>
+                </div>
+                <IconButton
+                  aria-label="close"
                   onClick={handleCloseModal}
-                  startIcon={<CancelIcon />}
-                  className="hover:bg-red-50"
-                  sx={{
-                    borderColor: "rgba(239, 68, 68, 0.5)",
-                    color: "rgb(239, 68, 68)",
-                    "&:hover": {
-                      borderColor: "rgb(239, 68, 68)",
-                      backgroundColor: "rgba(239, 68, 68, 0.04)",
-                    },
-                  }}
+                  className="hover:rotate-90 transition-transform duration-300"
+                  size="small"
                 >
-                  Cancel
-                </Button>
-              </Tooltip>
-              <Tooltip title="Save note" arrow>
-                <Button
-                  variant="contained"
-                  onClick={async () => {
-                    try {
-                      await addNote(newNote);
-                      handleCloseModal();
-                      setNewNote({ title: "", content: "" });
-                    } catch (error) {
-                      console.error("Failed to create note:", error);
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </div>
+            </div>
+
+            <div className="flex-1 p-4 overflow-hidden">
+              <div
+                className="relative h-full overflow-y-auto"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%)",
+                  borderRadius: "12px",
+                  boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)",
+                }}
+              >
+                <div
+                  className="sticky top-0 left-0 right-0 h-[24px]"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(90deg, #3b82f6, #3b82f6 2px, transparent 2px, transparent 15px)",
+                    opacity: "0.15",
+                    borderTopLeftRadius: "12px",
+                    borderTopRightRadius: "12px",
+                  }}
+                />
+
+                <div className="space-y-4 p-6">
+                  <TextField
+                    fullWidth
+                    placeholder="Give your note a title..."
+                    variant="standard"
+                    value={newNote.title}
+                    onChange={(e) =>
+                      setNewNote({ ...newNote, title: e.target.value })
                     }
-                  }}
-                  startIcon={<SaveIcon />}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
-                            transform hover:scale-105 transition-all duration-200"
-                >
-                  Save Note
-                </Button>
-              </Tooltip>
+                    className="notebook-title"
+                    InputProps={{
+                      disableUnderline: true,
+                      style: { fontSize: "1.25rem", fontWeight: 500 },
+                    }}
+                  />
+
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={12}
+                    placeholder="Start writing your thoughts here..."
+                    variant="standard"
+                    value={newNote.content}
+                    onChange={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      // Auto-resize logic
+                      target.style.height = "auto";
+                      target.style.height = target.scrollHeight + "px";
+                      setNewNote({ ...newNote, content: e.target.value });
+                    }}
+                    className="notebook-paper"
+                    inputRef={noteContentRef}
+                    InputProps={{
+                      disableUnderline: true,
+                      style: { overflow: "hidden" },
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <Tooltip title="Generate content based on your input" arrow>
+                  <Button
+                    variant="outlined"
+                    onClick={async () => {
+                      if (!newNote.content) return;
+                      try {
+                        setIsGenerating(true);
+                        const content = await generateContent(newNote.content);
+                        setGeneratedContent(content);
+                        setShowGeneratedContent(true);
+                      } catch (error) {
+                        console.error("Error generating content:", error);
+                      } finally {
+                        setIsGenerating(false);
+                      }
+                    }}
+                    disabled={isGenerating || !newNote.content}
+                    startIcon={<AutoFixHighIcon />}
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                  >
+                    {isGenerating ? "Generating..." : "Generate"}
+                  </Button>
+                </Tooltip>
+
+                <div className="flex gap-3">
+                  <Tooltip title="Cancel" arrow>
+                    <Button
+                      variant="outlined"
+                      onClick={handleCloseModal}
+                      startIcon={<CancelIcon />}
+                      className="hover:bg-red-50"
+                      sx={{
+                        borderColor: "rgba(239, 68, 68, 0.5)",
+                        color: "rgb(239, 68, 68)",
+                        "&:hover": {
+                          borderColor: "rgb(239, 68, 68)",
+                          backgroundColor: "rgba(239, 68, 68, 0.04)",
+                        },
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="Save note" arrow>
+                    <Button
+                      variant="contained"
+                      onClick={async () => {
+                        try {
+                          await addNote(newNote);
+                          handleCloseModal();
+                          setNewNote({ title: "", content: "" });
+                        } catch (error) {
+                          console.error("Failed to create note:", error);
+                        }
+                      }}
+                      startIcon={<SaveIcon />}
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
+                          transform hover:scale-105 transition-all duration-200"
+                    >
+                      Save Note
+                    </Button>
+                  </Tooltip>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Generated Content Panel */}
+          {showGeneratedContent && (
+            <div
+              className={`w-[500px] bg-purple-50 rounded-lg transition-all duration-300 flex flex-col h-[80vh] transform ${
+                showGeneratedContent
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-full"
+              }`}
+            >
+              <div className="p-4 border-b border-purple-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AutoFixHighIcon className="text-purple-600 mr-2" />
+                    <h2 className="text-xl font-semibold text-purple-800">
+                      AI Generated
+                    </h2>
+                  </div>
+                  <Tooltip title="Close Panel" arrow placement="top">
+                    <IconButton
+                      size="small"
+                      onClick={() => setShowGeneratedContent(false)}
+                      className="hover:rotate-90 transition-transform duration-300"
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              </div>
+
+              <div className="flex-1 p-4 overflow-hidden">
+                <div className="bg-white p-4 rounded-lg shadow-sm h-full">
+                  {isGenerating ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-purple-600">
+                        Generating content...
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-gray-700 whitespace-pre-wrap overflow-y-auto h-full">
+                      {generatedContent}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-purple-100">
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setNewNote((prev) => ({
+                      ...prev,
+                      content: generatedContent,
+                    }));
+                    setShowGeneratedContent(false);
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                >
+                  Use This Content
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>
