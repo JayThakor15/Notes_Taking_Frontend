@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
+// @ts-ignore - jsPDF types may not be present if not installed with @types
+import jsPDF from "jspdf";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import StickyNote2OutlinedIcon from "@mui/icons-material/StickyNote2Outlined";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
-import GeneratedContentModal from "./GeneratedContentModal";
+// import GeneratedContentModal from "./GeneratedContentModal"; // currently unused
 import { CircularProgress } from "@mui/material";
 import API, { generateContent } from "../utils/api";
 import "../styles/notes.css";
@@ -133,6 +136,37 @@ const Notes = () => {
     setShowGeneratedContent(false);
   };
 
+  const exportNoteToPDF = (note: { title: string; content: string }) => {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const marginX = 48;
+    const marginTop = 56;
+    const lineHeight = 18;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const usableWidth = pageWidth - marginX * 2;
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(note.title || "Untitled Note", marginX, marginTop);
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(12);
+    let y = marginTop + 28;
+    const paragraphs = (note.content || "").split(/\n\n+/);
+    paragraphs.forEach((para) => {
+      const lines = doc.splitTextToSize(para.replace(/\n/g, " "), usableWidth);
+      lines.forEach((l: string) => {
+        if (y > doc.internal.pageSize.getHeight() - 72) {
+          doc.addPage();
+          y = marginTop;
+        }
+        doc.text(l, marginX, y);
+        y += lineHeight;
+      });
+      y += lineHeight * 0.5;
+    });
+    const fileName =
+      (note.title || "note").replace(/[^a-z0-9\-_]+/gi, "_") + ".pdf";
+    doc.save(fileName);
+  };
+
   useEffect(() => {
     fetchNotes();
   }, []);
@@ -175,6 +209,12 @@ const Notes = () => {
                 {viewingNote.title || "Untitled Note"}
               </h2>
               <div className="flex items-center gap-3">
+                <button
+                  onClick={() => exportNoteToPDF(viewingNote)}
+                  className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors"
+                >
+                  Download
+                </button>
                 <button
                   onClick={() => {
                     // Switch to edit mode with this note
@@ -227,20 +267,14 @@ const Notes = () => {
       )}
       {/* Edit and Generate Content Modals */}
       {isEditing && editingNote && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 modal-overlay">
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm z-50 modal-overlay flex">
           <div
-            className={`flex ${
-              showGeneratedContent
-                ? "w-[95vw] h-[90vh] gap-4 p-4"
-                : "items-center justify-center"
-            } transition-all duration-300 ease-in-out`}
+            className={`flex w-screen h-screen p-6 gap-6 transition-all duration-300 ease-in-out`}
           >
             {/* Edit Modal */}
             <div
               className={`bg-white rounded-lg p-0 w-full ${
-                showGeneratedContent
-                  ? "max-w-md h-full flex-shrink-0"
-                  : "max-w-xl"
+                showGeneratedContent ? "flex-[3] h-full" : "h-full"
               } modal-content shadow-xl flex flex-col`}
               style={{ overflow: "hidden" }}
             >
@@ -250,13 +284,14 @@ const Notes = () => {
                 </h2>
                 <button
                   onClick={handleCancel}
-                  className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-1"
+                  aria-label="Close edit modal"
                 >
                   <CloseIcon />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto px-6 pb-4 pt-4">
-                <div className="notebook-paper">
+              <div className="flex-1 px-6 pb-4 pt-4 overflow-hidden">
+                <div className="notebook-paper h-full flex flex-col overflow-hidden">
                   <input
                     type="text"
                     value={editingNote.title}
@@ -270,23 +305,25 @@ const Notes = () => {
                   <textarea
                     ref={editTextareaRef}
                     value={editingNote.content}
-                    onChange={(e) => {
-                      const el = e.target;
-                      el.style.height = "auto";
-                      el.style.height = el.scrollHeight + "px";
+                    onChange={(e) =>
                       setEditingNote({
                         ...editingNote,
                         content: e.target.value,
-                      });
-                    }}
+                      })
+                    }
                     placeholder="Edit your note here..."
-                    className="w-full bg-transparent focus:outline-none"
-                    rows={8}
-                    style={{ overflow: "hidden", resize: "none" }}
+                    className="w-full bg-transparent focus:outline-none flex-1 resize-none"
+                    style={{ minHeight: "0" }}
                   />
                 </div>
               </div>
               <div className="px-6 py-4 border-t border-gray-100 flex items-center space-x-3 justify-end bg-white">
+                <button
+                  onClick={() => editingNote && exportNoteToPDF(editingNote)}
+                  className="flex items-center px-4 py-2 text-green-600 bg-green-50 rounded-md hover:bg-green-100 transition-colors duration-200"
+                >
+                  Download
+                </button>
                 <button
                   onClick={handleGenerateContent}
                   disabled={isGenerating}
@@ -316,7 +353,7 @@ const Notes = () => {
 
             {/* Generated Content Panel */}
             {showGeneratedContent && (
-              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl border-l-4 border-purple-500 h-full overflow-y-auto flex-shrink-0">
+              <div className="bg-white rounded-lg p-6 w-full flex-[2] shadow-xl border-l-4 border-purple-500 h-full overflow-y-auto flex-shrink-0">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-purple-700">
                     Generated Content
@@ -369,15 +406,15 @@ const Notes = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 p-4">
           {notes.map((note, index) => (
             <div
               key={note._id}
-              className="note-card relative overflow-hidden bg-white rounded-lg p-4 cursor-pointer"
+              className="note-card relative overflow-hidden bg-white rounded-lg p-4 cursor-pointer flex flex-col min-h-[230px] shadow-sm hover:shadow-md transition-shadow"
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => setViewingNote(note)}
             >
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col">
                 <h3 className="font-semibold text-lg text-gray-800 mb-2">
                   {note.title}
                 </h3>
@@ -393,6 +430,20 @@ const Notes = () => {
                 </p>
               </div>
               <div className="flex justify-end space-x-2 mt-4 border-t pt-3">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    exportNoteToPDF({
+                      title: note.title,
+                      content: note.content,
+                    });
+                  }}
+                  className="action-button flex items-center px-3 py-1.5 text-green-600 bg-green-50 rounded-md
+                          hover:bg-green-100 transition-all duration-200"
+                >
+                  <FileDownloadOutlinedIcon className="w-4 h-4 mr-1" />
+                  <span>Download</span>
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

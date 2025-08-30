@@ -10,7 +10,7 @@
     linear-gradient(#e5e7eb 0.1em, transparent 0.1em);
   background-size: 100% 1.5em;
   padding: 0.75em 1.5em !important;
-  line-height: 1.5em;
+  line-height: 2.8em;
   border-radius: 8px;
   transition: all 0.3s ease;
 }
@@ -21,10 +21,17 @@
   padding-top: 0.75em !important;
   padding-bottom: 0.75em !important;
   font-size: 1rem;
+
   color: #374151;
   transform: translateY(-0.1em);
-  overflow: hidden !important; /* hide inner scrollbar */
+  /* Allow natural scrolling; editing view needs scroll. To hide scrollbars in specific places, use the .no-scroll-textarea helper class below. */
+  overflow: auto;
   resize: none; /* prevent manual resize that could reintroduce scrollbars */
+}
+
+/* Helper to explicitly hide scrollbar when desired (e.g., create modal auto-resize scenario) */
+.no-scroll-textarea {
+  overflow: hidden !important;
 }
 
 .notebook-paper:focus-within {

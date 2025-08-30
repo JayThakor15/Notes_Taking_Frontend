@@ -172,22 +172,28 @@ const Dashboard = () => {
                   }}
                 />
 
-                <div className="p-6">
-                  <div className="notebook-paper">
-                    <TextField
-                      fullWidth
-                      placeholder="Give your note a title..."
-                      variant="standard"
-                      value={newNote.title}
-                      onChange={(e) =>
-                        setNewNote({ ...newNote, title: e.target.value })
-                      }
-                      className="notebook-title"
-                      InputProps={{
-                        disableUnderline: true,
-                        style: { fontSize: "1.25rem", fontWeight: 600, background: "transparent" },
-                      }}
-                    />
+                <div className="p-6 pt-2">
+                  {/* Title above lines */}
+                  <TextField
+                    fullWidth
+                    placeholder="Give your note a title..."
+                    variant="standard"
+                    value={newNote.title}
+                    onChange={(e) =>
+                      setNewNote({ ...newNote, title: e.target.value })
+                    }
+                    className="notebook-title"
+                    InputProps={{
+                      disableUnderline: true,
+                      style: {
+                        fontSize: "1.35rem",
+                        fontWeight: 600,
+                        background: "transparent",
+                        padding: 0,
+                      },
+                    }}
+                  />
+                  <div className="mt-1 notebook-paper">
                     <TextField
                       fullWidth
                       multiline
@@ -204,7 +210,10 @@ const Dashboard = () => {
                       inputRef={noteContentRef}
                       InputProps={{
                         disableUnderline: true,
-                        style: { overflow: "hidden", background: "transparent" },
+                        style: {
+                          overflow: "hidden",
+                          background: "transparent",
+                        },
                       }}
                     />
                   </div>
