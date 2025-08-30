@@ -35,12 +35,16 @@ export default function SignIn() {
         </div>
       )}
       {/* Login Card - More compact and shadcn-like */}
-      <div className="flex items-center gap-2 mb-4 w-full absolute z-2 top-4 left-3">
-        <img src="./Logo.png" alt="NotesHive Logo" className="h-10 w-10" />
+      <div className="flex items-center gap-2 mb-4 w-full absolute z-2 top-4 left-3 md:left-6">
+        <img
+          src="./Logo.png"
+          alt="NotesHive Logo"
+          className="h-8 w-8 md:h-10 md:w-10"
+        />
         <h3 className="text-lg font-semibold">NotesHive</h3>
       </div>
       <div className="flex w-full h-full">
-        <div className="relative w-2/3 mt-15 max-w-sm p-6 space-y-6 bg-white dark:bg-black rounded-lg ">
+        <div className="relative w-full md:w-2/3 mt-15 max-w-sm mx-auto p-6 space-y-6 bg-white dark:bg-black rounded-lg">
           {/* Header section with icon and title - More compact */}
           <div className="text-center space-y-3">
             <div>
@@ -315,7 +319,7 @@ export default function SignIn() {
           </div>
           {/* Notification removed from here; only top center notification will show */}
         </div>
-        <div className=" h-full w-full p-2">
+        <div className="hidden md:block h-full w-full p-2">
           <img
             src="./Login_Background.jpg"
             alt=""

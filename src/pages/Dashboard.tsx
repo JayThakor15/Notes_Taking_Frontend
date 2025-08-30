@@ -17,6 +17,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import { addNote, generateContent } from "../utils/api";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
+import MenuIcon from "@mui/icons-material/Menu";
 import "../styles/notebook.css";
 
 interface NewNote {
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showGeneratedContent, setShowGeneratedContent] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const noteContentRef = useRef<HTMLTextAreaElement | null>(null);
 
   const handleCloseModal = () => {
@@ -55,21 +57,44 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex w-full h-screen bg-gray-50">
+    <div className="flex w-full h-screen bg-gray-50 relative">
+      {/* Hamburger Menu Button - Visible only on mobile */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <IconButton
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="bg-white shadow-md hover:bg-gray-100"
+          size="large"
+        >
+          <MenuIcon />
+        </IconButton>
+      </div>
+
+      {/* Overlay for mobile when sidebar is open */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Fixed Navigation Sidebar */}
-      <div className="w-64 shadow-xl h-screen fixed left-0 top-0 bg-white">
+      <div
+        className={`${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0 w-64 shadow-xl h-screen fixed left-0 top-0 bg-white z-40 transition-transform duration-300 ease-in-out`}
+      >
         <Navigation onCreateNote={() => setIsCreateModalOpen(true)} />
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-64">
+      <div className="flex-1 md:ml-64 transition-all duration-300">
         {/* Fixed Header */}
-        <div className="fixed top-0 right-0 left-64 bg-white z-10">
+        <div className="fixed top-0 right-0 left-0 md:left-64 bg-white z-10">
           {/* User Info Section */}
-          <div className="p-6 shadow-lg rounded-2xl">
+          <div className="p-4 md:p-6 shadow-lg rounded-2xl mt-14 md:mt-0">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <h1 className="text-xl md:text-2xl font-semibold">Dashboard</h1>
                 <p className="mt-2 font-medium text-gray-600">
                   Welcome, {name}!
                 </p>
@@ -87,7 +112,7 @@ const Dashboard = () => {
           </div>
 
           {/* Create Note Section */}
-          <div className="px-6 py-4">
+          <div className="px-4 md:px-6 py-4">
             <Tooltip title="Create a new note" TransitionComponent={Zoom} arrow>
               <div
                 onClick={() => setIsCreateModalOpen(true)}
@@ -102,7 +127,7 @@ const Dashboard = () => {
         </div>
 
         {/* Scrollable Notes Section */}
-        <div className="mt-48 p-6 bg-white shadow-md">
+        <div className="mt-56 md:mt-48 p-4 md:p-6 bg-white shadow-md">
           <h2 className="text-xl font-semibold h-30 mt-4">Notes</h2>
           <div className="overflow-y-auto">
             <Notes />
@@ -115,12 +140,12 @@ const Dashboard = () => {
         open={isCreateModalOpen}
         onClose={handleCloseModal}
         aria-labelledby="create-note-modal"
-        className="flex items-center justify-center modal-overlay"
+        className="flex items-center justify-center modal-overlay p-4"
       >
         <div
-          className={`bg-white rounded-lg relative modal-content flex gap-4 p-4 transition-all duration-300 ${
+          className={`bg-white rounded-lg relative modal-content flex flex-col lg:flex-row gap-4 p-4 transition-all duration-300 ${
             isClosing ? "closing" : ""
-          } ${showGeneratedContent ? "w-11/12 max-w-7xl" : "w-[600px]"}`}
+          } ${showGeneratedContent ? "w-11/12 max-w-7xl" : "w-[95%] max-w-[600px]"}`}
           style={{
             boxShadow: "0 0 15px rgba(0,0,0,0.1)",
             maxHeight: "85vh",
@@ -129,7 +154,7 @@ const Dashboard = () => {
           {/* Main Create Note Panel */}
           <div
             className={`bg-white rounded-lg flex flex-col h-[80vh] transition-all duration-300 ${
-              showGeneratedContent ? "flex-1" : "w-full"
+              showGeneratedContent ? "lg:flex-1" : "w-full"
             }`}
           >
             <div className="p-4 border-b border-gray-100">
@@ -222,7 +247,7 @@ const Dashboard = () => {
             </div>
 
             <div className="p-4 border-t border-gray-100">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <Tooltip title="Generate content based on your input" arrow>
                   <Button
                     variant="outlined"
@@ -241,19 +266,19 @@ const Dashboard = () => {
                     }}
                     disabled={isGenerating || !newNote.content}
                     startIcon={<AutoFixHighIcon />}
-                    className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                    className="text-purple-600 border-purple-200 hover:bg-purple-50 w-full sm:w-auto"
                   >
                     {isGenerating ? "Generating..." : "Generate"}
                   </Button>
                 </Tooltip>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full sm:w-auto">
                   <Tooltip title="Cancel" arrow>
                     <Button
                       variant="outlined"
                       onClick={handleCloseModal}
                       startIcon={<CancelIcon />}
-                      className="hover:bg-red-50"
+                      className="hover:bg-red-50 flex-1 sm:flex-none"
                       sx={{
                         borderColor: "rgba(239, 68, 68, 0.5)",
                         color: "rgb(239, 68, 68)",
@@ -293,7 +318,7 @@ const Dashboard = () => {
           {/* Generated Content Panel */}
           {showGeneratedContent && (
             <div
-              className={`w-[500px] bg-purple-50 rounded-lg transition-all duration-300 flex flex-col h-[80vh] transform ${
+              className={`w-full lg:w-[500px] bg-purple-50 rounded-lg transition-all duration-300 flex flex-col h-[80vh] transform ${
                 showGeneratedContent
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-x-full"
