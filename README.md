@@ -1,8 +1,9 @@
 # 📝 NotesHive Frontend
 
-A modern, responsive frontend for the NotesHive note-taking platform. Built with React, Vite, and Tailwind CSS.
+A modern, responsive frontend for the NotesHive note-taking platform. Built with React, TypeScript, Vite, and Tailwind CSS.
 
 ![React](https://img.shields.io/badge/React-18%2B-61DAFB?style=flat&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat&logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-Latest-646CFF?style=flat&logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.x-38B2AC?style=flat&logo=tailwind-css)
 
@@ -33,6 +34,7 @@ A modern, responsive frontend for the NotesHive note-taking platform. Built with
 ## 🛠️ Tech Stack
 
 - **React 18+** - Modern React features
+- **TypeScript 5.x** - Type-safe JavaScript
 - **Vite** - Fast build tool and development server
 - **Tailwind CSS 4.x** - Utility-first CSS framework
 - **Material UI** - UI component library
