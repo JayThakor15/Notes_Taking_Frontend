@@ -72,10 +72,8 @@ npm install
 npm run dev
 ```
 
-4. **Open in browser**
-
 ```
-http://localhost:5173
+https://noteshivee.netlify.app/
 ```
 
 ## 📁 Project Structure
@@ -114,7 +112,7 @@ npm run lint         # Run ESLint
 
 The frontend connects to the NotesHive backend API:
 
-- **Production**: `https://noteshive-backend.example.com`
+- **Production**: `https://notes-taking-backend-5ewv.onrender.com`
 - **Development**: `http://localhost:5000`
 
 ### Key API Endpoints Used
