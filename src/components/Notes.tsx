@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 // @ts-ignore - jsPDF types may not be present if not installed with @types
 import jsPDF from "jspdf";
 import EditIcon from "@mui/icons-material/Edit";

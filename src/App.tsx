@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from "react";
+import { useState, useEffect, createContext } from "react";
 import "./App.css";
 import EntryPage from "./pages/EntryPage";
 import SignIn from "./pages/SignIn";
