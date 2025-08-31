@@ -3,35 +3,34 @@ import "./App.css";
 import EntryPage from "./pages/EntryPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 
-
 export const ThemeContext = createContext({
-  theme: 'light',
+  theme: "light",
   toggleTheme: () => {},
 });
 
 function App() {
   const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') || 'light';
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") || "light";
     }
-    return 'light';
+    return "light";
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
+    if (theme === "dark") {
+      root.classList.add("dark");
     } else {
-      root.classList.remove('dark');
+      root.classList.remove("dark");
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   return (
@@ -49,6 +48,3 @@ function App() {
 }
 
 export default App;
-
-
-
