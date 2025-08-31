@@ -1,10 +1,8 @@
 "use client";
 import API from "../utils/api";
-import  { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Notification from "../components/ui/toast";
-
-
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -63,6 +61,19 @@ export function SignUp() {
             onSubmit={async (e) => {
               e.preventDefault();
               setNotification(null);
+
+              // Email validation (simple regex)
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!otpStep && !emailRegex.test(email)) {
+                setNotification({
+                  type: "error",
+                  title: "Invalid Email",
+                  message: "Please enter a valid email address.",
+                  showIcon: true,
+                  duration: 4000,
+                });
+                return;
+              }
 
               if (!otpStep) {
                 // First step: Send OTP
