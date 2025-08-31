@@ -1,4 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
+import { ThemeContext } from "../App";
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
 import Navigation from "../components/navigation";
 import Notes from "../components/Notes";
 import UserProfile from "../components/UserProfile";
@@ -27,6 +30,7 @@ interface NewNote {
 
 const Dashboard = () => {
   const [name, setname] = useState("User");
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [email, setEmail] = useState("User");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -57,7 +61,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex w-full h-screen bg-gray-50 relative">
+    <div className="flex w-full h-screen bg-gray-50 dark:bg-gray-950 relative">
       {/* Hamburger Menu Button - Visible only on mobile */}
       <div className="md:hidden fixed top-4 left-4 z-50">
         <IconButton
@@ -89,25 +93,36 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="flex-1 md:ml-64 transition-all duration-300">
         {/* Fixed Header */}
-        <div className="fixed top-0 right-0 left-0 md:left-64 bg-white z-10">
+        <div className="fixed top-0 right-0 left-0 md:left-64 bg-white dark:bg-gray-900 z-10">
           {/* User Info Section */}
           <div className="p-4 md:p-6 shadow-lg rounded-2xl mt-14 md:mt-0">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center gap-2">
               <div>
-                <h1 className="text-xl md:text-2xl font-semibold">Dashboard</h1>
-                <p className="mt-2 font-medium text-gray-600">
+                <h1 className="text-xl md:text-2xl font-semibold dark:text-white">
+                  Dashboard
+                </h1>
+                <p className="mt-2 font-medium text-gray-600 dark:text-gray-300">
                   Welcome, {name}!
                 </p>
               </div>
-              <UserProfile
-                name={name}
-                email={email}
-                profilePicture={
-                  localStorage.getItem("user")
-                    ? JSON.parse(localStorage.getItem("user")!).profilePicture
-                    : undefined
-                }
-              />
+              <div className="flex items-center gap-2">
+                <IconButton onClick={toggleTheme} className="mr-2" size="large">
+                  {theme === "dark" ? (
+                    <Brightness7Icon className="text-yellow-400" />
+                  ) : (
+                    <Brightness4Icon className="text-gray-700" />
+                  )}
+                </IconButton>
+                <UserProfile
+                  name={name}
+                  email={email}
+                  profilePicture={
+                    localStorage.getItem("user")
+                      ? JSON.parse(localStorage.getItem("user")!).profilePicture
+                      : undefined
+                  }
+                />
+              </div>
             </div>
           </div>
 
@@ -127,8 +142,10 @@ const Dashboard = () => {
         </div>
 
         {/* Scrollable Notes Section */}
-        <div className="mt-56 md:mt-48 p-4 md:p-6 bg-white shadow-md">
-          <h2 className="text-xl font-semibold h-30 mt-4">Notes</h2>
+        <div className="mt-56 md:mt-48 p-4 md:p-6 bg-white dark:bg-gray-800 shadow-md">
+          <h2 className="text-xl font-semibold h-30 mt-4 dark:text-white">
+            Notes
+          </h2>
           <div className="overflow-y-auto">
             <Notes />
           </div>
@@ -145,7 +162,9 @@ const Dashboard = () => {
         <div
           className={`bg-white rounded-lg relative modal-content flex flex-col lg:flex-row gap-4 p-4 transition-all duration-300 ${
             isClosing ? "closing" : ""
-          } ${showGeneratedContent ? "w-11/12 max-w-7xl" : "w-[95%] max-w-[600px]"}`}
+          } ${
+            showGeneratedContent ? "w-11/12 max-w-7xl" : "w-[95%] max-w-[600px]"
+          }`}
           style={{
             boxShadow: "0 0 15px rgba(0,0,0,0.1)",
             maxHeight: "85vh",
@@ -377,7 +396,7 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-        </div>
+        </div>  
       </Modal>
     </div>
   );

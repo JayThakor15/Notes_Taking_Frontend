@@ -20,22 +20,22 @@ const Navigation: React.FC<NavigationProps> = ({ onCreateNote }) => {
   };
 
   return (
-    <div>
-      <div className="flex items-center space-x-2 p-4 bg-white">
+    <div className="h-full bg-white dark:bg-gray-900">
+      <div className="flex items-center space-x-2 p-4 bg-white dark:bg-gray-900">
         <img src="./Logo.png" alt="NotesHive Logo" className="h-10 w-10" />
-        <h3 className="text-lg font-semibold">NotesHive</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">NotesHive</h3>
       </div>
       <div className="flex space-y-4 p-4 flex-col justify-between h-[calc(100vh-64px)]">
         <div className="space-y-2">
           <button
-            className="flex items-center space-x-2 text-gray-700 hover:text-blue-500 px-4 py-2 rounded transition duration-200 w-full"
+            className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 px-4 py-2 rounded transition duration-200 w-full"
             onClick={() => navigate("/dashboard")}
           >
             <HomeIcon /> <span>Home</span>
           </button>
 
           <button
-            className="flex items-center space-x-2 text-gray-700 hover:text-blue-500 px-4 py-2 rounded transition duration-200 w-full"
+            className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 px-4 py-2 rounded transition duration-200 w-full"
             onClick={onCreateNote}
           >
             <NoteAddIcon /> <span>Create Note</span>
@@ -43,7 +43,7 @@ const Navigation: React.FC<NavigationProps> = ({ onCreateNote }) => {
         </div>
 
         <button
-          className="flex items-center space-x-2 text-gray-700 hover:text-red-500 px-4 py-2 rounded transition duration-200 w-full"
+          className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-red-500 dark:hover:text-red-400 px-4 py-2 rounded transition duration-200 w-full"
           onClick={handleSignOut}
         >
           <LogoutIcon /> <span>Sign Out</span>
